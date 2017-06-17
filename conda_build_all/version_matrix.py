@@ -142,6 +142,17 @@ def special_case_version_matrix(meta, index):
     run_requirements = meta.get_value('requirements/run', [])
     run_requirement_specs = parse_specifications(run_requirements)
 
+    # Check to see if this is a noarch python package.
+    # Could be that `noarch_python` is set to True or
+    # that `noarch` is set to `"python"`.
+    py_spec = requirement_specs.get('python')
+    noarch_python = (meta.get_value('build/noarch_python', False) or
+                     (meta.get_value('build/noarch', '') == 'python'))
+    if py_spec and noarch_python:
+        # A simple spec (noarch python) has been defined, so we can drop it from the
+        # special cases.
+        requirement_specs.pop('python')
+
     # Thanks to https://github.com/conda/conda-build/pull/493 we no longer need to
     # compute the complex matrix for numpy versions unless a specific version has
     # been defined.
