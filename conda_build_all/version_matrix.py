@@ -372,7 +372,13 @@ def keep_top_n_minor_versions(cases, n=2):
 
 if hasattr(conda_build, 'api'):
     def setup_vn_mtx_case(case, config):
-        for pkg, version in case:
+        for each_case in case:
+            # If the special case is an empty tuple, continue.
+            # Could happen if a Python noarch package is built.
+            if not each_case:
+                continue
+
+            pkg, version = each_case
             if pkg == 'python':
                 version = int(version.replace('.', ''))
                 config.CONDA_PY = version
@@ -396,7 +402,12 @@ else:
         orig_py = conda_build.config.config.CONDA_PY
         orig_r = conda_build.config.config.CONDA_R
         orig_perl = conda_build.config.config.CONDA_PERL
-        for pkg, version in case:
+        for each_case in case:
+            # If the special case is an empty tuple, continue.
+            # Could happen if a Python noarch package is built.
+            if not each_case:
+                continue
+
             if pkg == 'python':
                 version = int(version.replace('.', ''))
                 config.CONDA_PY = version
