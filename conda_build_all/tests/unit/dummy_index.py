@@ -14,13 +14,16 @@ import conda.config
 
 _DummyPackage = collections.namedtuple('_DummyPackage',
                                        ['pkg_name', 'build_deps',
-                                        'run_deps', 'vn'])
+                                        'run_deps', 'vn', 'noarch',
+                                        'noarch_py'])
 
 
 class DummyPackage(_DummyPackage):
-    def __new__(cls, name, build_deps=None, run_deps=None, version='0.0'):
+    def __new__(cls, name, build_deps=None, run_deps=None, version='0.0',
+                noarch='', noarch_py=False):
         return super(DummyPackage, cls).__new__(cls, name, build_deps or (),
-                                                run_deps or (), version)
+                                                run_deps or (), version,
+                                                noarch, noarch_py)
 
     def name(self):
         return self.pkg_name
@@ -32,7 +35,11 @@ class DummyPackage(_DummyPackage):
         return '{}-{}-{}'.format(self.name(), self.version(), '0')
 
     def get_value(self, item, default):
-        if item == 'requirements/run':
+        if item == 'build/noarch':
+            return self.noarch
+        elif item == 'build/noarch_python':
+            return self.noarch_py
+        elif item == 'requirements/run':
             return self.run_deps
         elif item == 'requirements/build':
             return self.build_deps

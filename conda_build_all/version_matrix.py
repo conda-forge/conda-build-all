@@ -142,6 +142,17 @@ def special_case_version_matrix(meta, index):
     run_requirements = meta.get_value('requirements/run', [])
     run_requirement_specs = parse_specifications(run_requirements)
 
+    # Check to see if this is a noarch python package.
+    # Could be that `noarch_python` is set to True or
+    # that `noarch` is set to `"python"`.
+    py_spec = requirement_specs.get('python')
+    noarch_python = (meta.get_value('build/noarch_python', False) or
+                     (meta.get_value('build/noarch', '') == 'python'))
+    if py_spec and noarch_python:
+        # A simple spec (noarch python) has been defined, so we can drop it from the
+        # special cases.
+        requirement_specs.pop('python')
+
     # Thanks to https://github.com/conda/conda-build/pull/493 we no longer need to
     # compute the complex matrix for numpy versions unless a specific version has
     # been defined.
@@ -361,7 +372,13 @@ def keep_top_n_minor_versions(cases, n=2):
 
 if hasattr(conda_build, 'api'):
     def setup_vn_mtx_case(case, config):
-        for pkg, version in case:
+        for each_case in case:
+            # If the special case is an empty tuple, continue.
+            # Could happen if a Python noarch package is built.
+            if not each_case:
+                continue
+
+            pkg, version = each_case
             if pkg == 'python':
                 version = int(version.replace('.', ''))
                 config.CONDA_PY = version
@@ -385,7 +402,12 @@ else:
         orig_py = conda_build.config.config.CONDA_PY
         orig_r = conda_build.config.config.CONDA_R
         orig_perl = conda_build.config.config.CONDA_PERL
-        for pkg, version in case:
+        for each_case in case:
+            # If the special case is an empty tuple, continue.
+            # Could happen if a Python noarch package is built.
+            if not each_case:
+                continue
+
             if pkg == 'python':
                 version = int(version.replace('.', ''))
                 config.CONDA_PY = version
