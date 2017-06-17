@@ -227,7 +227,7 @@ def special_case_version_matrix(meta, index):
                             )
                     add_case_if_soluble(case)
         elif 'python' in requirement_specs:
-            if meta.noarch == 'python':
+            if getattr(meta, 'noarch', None) == 'python':
                 # no python version dependency on noarch: python recipes
                 add_case_if_soluble(())
             else:
