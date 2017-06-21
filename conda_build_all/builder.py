@@ -130,7 +130,7 @@ class Builder(object):
                  inspection_channels, inspection_directories,
                  artefact_destinations,
                  matrix_conditions, matrix_max_n_major_minor_versions=(2, 2),
-                 dry_run=False):
+                 dry_run=False, skip_noarch=False):
         """
         Build a directory of conda recipes sequentially, if they don't already exist in the inspection locations.
 
@@ -153,6 +153,8 @@ class Builder(object):
         dry_run : bool
             True to stop before building recipes but after determining which
             recipes to build.
+        skip_noarch : bool
+            True to skip noarch packages.
 
         """
         self.conda_recipes_directory = conda_recipes_directory
@@ -162,6 +164,7 @@ class Builder(object):
         self.matrix_conditions = matrix_conditions
         self.matrix_max_n_major_minor_versions = matrix_max_n_major_minor_versions
         self.dry_run = dry_run
+        self.skip_noarch = skip_noarch
 
     def fetch_all_metas(self, config):
         """
@@ -225,6 +228,8 @@ class Builder(object):
         except ImportError:
             index = index.copy()
         for meta in recipes:
+            if self.skip_noarch and meta.noarch:
+                continue
             distros = resolved_distribution.ResolvedDistribution.resolve_all(meta, index,
                                                                              self.matrix_conditions)
             cases = [distro.special_versions for distro in distros]

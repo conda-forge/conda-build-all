@@ -31,6 +31,8 @@ def main():
     parser.add_argument('--dry-run', default=False,
         action='store_true',
         help='Skip all builds, just list what distribution would be built.')
+    parser.add_argument('--skip-noarch', default=False, action='store_true',
+        help='Do not build noarch packages')
 
     parser.add_argument('--artefact-directory',
         help='A directory for any newly built distributions to be placed.')
@@ -89,7 +91,8 @@ def main():
                                         inspection_directories,
                                         artefact_destinations,
                                         args.matrix_conditions,
-                                        max_n_versions, args.dry_run)
+                                        max_n_versions,
+                                        args.dry_run, args.skip_noarch)
     b.main()
 
 
